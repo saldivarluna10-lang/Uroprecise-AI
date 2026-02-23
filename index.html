@@ -26,27 +26,22 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
 
-        // --- COMPONENTE DE ICONOS SVG (Fragmentos para estabilidad total) ---
+        // --- COMPONENTE DE ICONOS SVG ---
         const Icon = ({ name, size = 24, className = "" }) => {
             const icons = {
                 BrainCircuit: (<><path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0 .47 4.96 2.5 2.5 0 0 0 3 1.98 2.5 2.5 0 0 0 4.96.47 2.5 2.5 0 0 0 1.98-3 2.5 2.5 0 0 0-.47-4.96 2.5 2.5 0 0 0-3-1.98Z"/><path d="M9 15v-2"/><path d="M15 15v-2"/><path d="M9 9v2"/><path d="M15 9v2"/><path d="M12 12h.01"/></>),
                 Plus: <><path d="M12 5v14M5 12h14"/></>,
                 Search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
                 History: <><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></>,
-                Calendar: <><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></>,
                 ChevronRight: <><path d="m9 18 6-6-6-6"/></>,
                 ArrowLeft: <><path d="m12 19-7-7 7-7M5 12h14"/></>,
                 X: <><path d="M18 6 6 18M6 6l12 12"/></>,
                 Zap: <><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></>,
                 Hourglass: <><path d="M5 2h14"/><path d="M5 22h14"/><path d="M6 2v6a6 6 0 1 0 12 0V2"/><path d="M6 22v-6a6 6 0 1 1 12 0v6"/><path d="M12 12v.01"/></>,
-                Target: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>,
-                AlertTriangle: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>,
-                XCircle: <><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></>,
                 FileDown: <><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><polyline points="9 15 12 18 15 15"/></>,
                 Building2: <><path d="M3 21h18"/><path d="M3 7V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M19 21V7H5v14"/><path d="M9 11h6"/><path d="M9 15h6"/></>,
                 ShieldCheck: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></>,
-                Microscope: <><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0-14 0"/><path d="M9 14h2"/><path d="M9 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/><path d="M3 14h18"/></>,
-                CheckCircle2: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>
+                Save: <><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>
             };
             return (
                 <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -61,11 +56,11 @@
         const COMORBIDITIES_CATALOG = ["Diabetes Mellitus Tipo 2", "Fibrilación Auricular", "Hipertensión Arterial", "Epilepsia", "Riesgo de Caídas", "Insuficiencia Cardíaca", "Deterioro Cognitivo", "Polifarmacia", "Insuficiencia Hepática", "Osteoporosis", "Enfermedad Cardiovascular Grave", "Historial de Convulsiones"];
         const MEDS_CATALOG = ["Apixabán", "Rivaroxabán", "Dabigatrán", "Atorvastatina", "Simvastatina", "Amlodipino", "Metoprolol", "Fluoxetina", "Sertralina", "Risperidona", "Metformina", "Warfarina", "Nifedipino", "Verapamilo", "Amiodarona"];
 
-
         // --- APP ---
         function App() {
             const [screen, setScreen] = useState('dashboard');
             const [search, setSearch] = useState("");
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
             const [patients, setPatients] = useState([
                 { id: "HRAEI-003", name: "ROMERO ROCHA, A.", stage: "mHSPC", date: "22/02/2026", isFit: true }
             ]);
@@ -73,9 +68,6 @@
             const [queryC, setQueryC] = useState("");
             const [queryM, setQueryM] = useState("");
             const [currentAnalysis, setCurrentAnalysis] = useState(null);
-            
-            // Estado de carga para la IA
-            const [isAnalyzing, setIsAnalyzing] = useState(false);
 
             const filteredC = useMemo(() => queryC.length > 1 ? COMORBIDITIES_CATALOG.filter(i => i.toLowerCase().includes(queryC.toLowerCase())) : [], [queryC]);
             const filteredM = useMemo(() => queryM.length > 1 ? MEDS_CATALOG.filter(i => i.toLowerCase().includes(queryM.toLowerCase())) : [], [queryM]);
@@ -91,13 +83,10 @@
             // --- MOTOR CLÍNICO CONECTADO A RENDER ---
             const handleAnalyze = async () => {
                 setIsAnalyzing(true);
-                
-                // Calculamos la expectativa de vida localmente
                 const age = parseInt(formData.age) || 70;
                 const lifeExpectancy = age < 65 ? (formData.isFit ? 25 : 15) : (age < 75 ? (formData.isFit ? 15 : 8) : (age < 85 ? (formData.isFit ? 8 : 4) : 2));
 
                 try {
-                    // Enviamos el expediente a tu servidor mundial en Render
                     const response = await fetch("https://uroprecise-backend.onrender.com/api/analizar-paciente", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -116,10 +105,8 @@
                     });
 
                     if (!response.ok) throw new Error("Error en la conexión con el servidor");
-                    
                     const dataIA = await response.json();
 
-                    // Armamos las tarjetas con la respuesta inteligente de Gemini
                     setCurrentAnalysis({
                         mainSuggestion: dataIA.farmaco_recomendado,
                         justification: dataIA.justificacion_clinica,
@@ -128,9 +115,7 @@
                         discardedDetails: [], 
                         lifeExpectancy: lifeExpectancy
                     });
-
                     setScreen('results');
-
                 } catch (error) {
                     alert("Hubo un error al conectar con UroPrecise AI. Revisa tu conexión: " + error.message);
                 } finally {
@@ -170,18 +155,14 @@
                             ${currentAnalysis.greenAlerts.map(a => `<li style="margin-bottom: 10px;">${a}</li>`).join('')}
                         </ul>
                     </div>
-                    ${(currentAnalysis.redAlerts.length > 0 || currentAnalysis.discardedDetails.length > 0) ? `
+                    ${(currentAnalysis.redAlerts.length > 0) ? `
                         <div style="background: #fef2f2; border: 2px solid #ef4444; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
                             <h3 style="color: #b91c1c; font-size: 12px; font-weight: 900; margin-bottom: 15px; text-transform: uppercase;">❌ Bloque de Seguridad (Riesgos y Exclusión)</h3>
                             <ul style="font-size: 13px; color: #991b1b; padding-left: 20px;">
                                 ${currentAnalysis.redAlerts.map(a => `<li style="margin-bottom: 10px;">${a}</li>`).join('')}
-                                ${currentAnalysis.discardedDetails.map(d => `<li style="margin-bottom: 10px;">${d}</li>`).join('')}
                             </ul>
                         </div>
                     ` : ''}
-                    <div style="margin-top: 60px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f1f1; padding-top: 25px;">
-                        Generado por UroPrecise AI v5.9 • Dr. Alberto Saldivar Luna • Dr. Victor Osornio Sanchez
-                    </div>
                 `;
                 html2pdf().from(element).set({ margin: 10, filename: `Reporte_${formData.name}.pdf`, jsPDF: { format: 'a4' } }).save();
             };
@@ -243,7 +224,7 @@
                                     </div>
                                 </section>
                                 <section className="space-y-4">
-                                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Fase 2: Antecedentes (Autocomplete)</p>
+                                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Fase 2: Antecedentes</p>
                                     <div className="relative">
                                         <input type="text" placeholder="Buscar enfermedad..." className="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold shadow-inner" value={queryC} onChange={e => setQueryC(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag('comorbidities', queryC))} />
                                         {filteredC.length > 0 && (
@@ -253,7 +234,7 @@
                                         )}
                                     </div>
                                     <div className="flex flex-wrap gap-2">{formData.comorbidities.map(c => <span key={c} className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-[10px] font-bold flex items-center gap-2 border border-red-100 uppercase">{c} <Icon name="X" size={14} className="cursor-pointer bg-red-200 rounded-full p-0.5" onClick={() => removeTag('comorbidities', c)}/></span>)}</div>
-                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 mt-6">Fase 3: Medicación (Autocomplete)</p>
+                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1 mt-6">Fase 3: Medicación</p>
                                     <div className="relative">
                                         <input type="text" placeholder="Buscar fármaco..." className="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold shadow-inner" value={queryM} onChange={e => setQueryM(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag('concomitantMeds', queryM))} />
                                         {filteredM.length > 0 && (
