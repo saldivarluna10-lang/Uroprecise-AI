@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UroPrecise AI v5.9 - HRAEI</title>
-    <!-- Bibliotecas Críticas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -62,100 +61,6 @@
         const COMORBIDITIES_CATALOG = ["Diabetes Mellitus Tipo 2", "Fibrilación Auricular", "Hipertensión Arterial", "Epilepsia", "Riesgo de Caídas", "Insuficiencia Cardíaca", "Deterioro Cognitivo", "Polifarmacia", "Insuficiencia Hepática", "Osteoporosis", "Enfermedad Cardiovascular Grave", "Historial de Convulsiones"];
         const MEDS_CATALOG = ["Apixabán", "Rivaroxabán", "Dabigatrán", "Atorvastatina", "Simvastatina", "Amlodipino", "Metoprolol", "Fluoxetina", "Sertralina", "Risperidona", "Metformina", "Warfarina", "Nifedipino", "Verapamilo", "Amiodarona"];
 
-        // --- MOTOR CLÍNICO AVANZADO ---
-        const analyzeUroPrecise = (data) => {
-            let mainSuggestion = "";
-            let justification = "";
-            let greenAlerts = [];
-            let redAlerts = [];
-            let trials = [];
-            let discardedDetails = [];
-            
-            const meds = data.concomitantMeds || [];
-            const diseases = data.comorbidities || [];
-            const psadt = parseFloat(data.psadt) || 0;
-            const age = parseInt(data.age) || 70;
-            const isFit = data.isFit;
-            const isSynchronous = data.presentation === 'Sincrónico (De novo)';
-
-            let lifeExpectancy = age < 65 ? (isFit ? 25 : 15) : (age < 75 ? (isFit ? 15 : 8) : (age < 85 ? (isFit ? 8 : 4) : 2));
-
-            // --- ESCENARIOS ---
-            if (data.stage === 'RBQ') {
-                if (psadt <= 9) {
-                    mainSuggestion = "Enzalutamida / Apalutamida";
-                    justification = "Recurrencia Bioquímica de Alto Riesgo. La intensificación es prioritaria según estudios EMBARK/PRESTO.";
-                    greenAlerts.push("Eficacia: Estudio EMBARK demostró reducción del 58% en riesgo de metástasis (HR 0.42).");
-                } else {
-                    mainSuggestion = "ADT Intermitente / Observación";
-                    justification = "RBQ de Bajo Riesgo. Se prioriza calidad de vida.";
-                }
-            } 
-            else if (data.stage === 'nmCRPC') {
-                if (psadt <= 10) {
-                    if (!isFit || diseases.includes('Deterioro Cognitivo') || diseases.includes('Riesgo de Caídas')) {
-                        mainSuggestion = "Darolutamida 600mg BID";
-                        justification = "nmCRPC Alto Riesgo con fragilidad. Darolutamida elegida por seguridad neurológica.";
-                        greenAlerts.push("Eficacia: Estudio ARAMIS demostró reducción del 31% en riesgo de muerte.");
-                        discardedDetails.push("Enzalutamida/Apalutamida: Descartadas por riesgo de caídas y fatiga en paciente frágil.");
-                    } else {
-                        mainSuggestion = "Apalutamida 240mg / Enzalutamida 160mg";
-                        justification = "nmCRPC Alto Riesgo paciente FIT.";
-                        greenAlerts.push("Eficacia: Estudios SPARTAN/PROSPER muestran beneficio Clase 1A en MFS.");
-                    }
-                }
-            } 
-            else if (data.stage === 'mHSPC') {
-                if (isSynchronous && data.volume === 'High') {
-                    if (isFit && lifeExpectancy > 5) {
-                        mainSuggestion = "Triple Terapia: ADT + Docetaxel + Darolutamida";
-                        justification = "Sincrónico Alto Volumen. Triplete (ARASENS) es el estándar por supervivencia global.";
-                        greenAlerts.push("Eficacia: Estudio ARASENS demostró beneficio masivo del triplete.");
-                    } else {
-                        mainSuggestion = "Doblete ARPI (Darolutamida o Apalutamida)";
-                        justification = "Sincrónico Alto Volumen en paciente frágil para quimioterapia.";
-                        greenAlerts.push("Eficacia: Estudios ARANOTE y TITAN avalan intensificación con ARPI.");
-                    }
-                } else {
-                    mainSuggestion = "Doblete ARPI (Darolutamida / Apalutamida)";
-                    justification = "mHSPC Metacrónico o Bajo Volumen.";
-                    greenAlerts.push("Eficacia: Estudio ARANOTE (2025) posiciona a Darolutamida como estándar seguro.");
-                }
-            } 
-            else if (data.stage === 'mCRPC') {
-                if (data.previousTreatment !== 'Ninguno') {
-                    mainSuggestion = "Docetaxel / Cabazitaxel / iPARP";
-                    justification = "Falla previa a ARPI. Cambio de mecanismo imperativo (Estudio CARD).";
-                    greenAlerts.push("Eficacia: Estudio CARD demostró superioridad de Cabazitaxel sobre cambio de ARPI.");
-                } else {
-                    if (diseases.includes('Diabetes Mellitus Tipo 2')) {
-                        mainSuggestion = "Enzalutamida 160mg";
-                        justification = "mCRPC Naive con Diabetes. Se prefiere evitar la Prednisona obligatoria de Abiraterona.";
-                        discardedDetails.push("Abiraterona: Descartada por riesgo de descontrol glucémico (Prednisona).");
-                    } else if (diseases.includes('Riesgo de Caídas')) {
-                        mainSuggestion = "Abiraterona 1000mg + Prednisona";
-                        justification = "mCRPC Naive con riesgo neurológico.";
-                        discardedDetails.push("Enzalutamida: Descartada por riesgo pro-convulsivante y caídas.");
-                    } else {
-                        mainSuggestion = "Abiraterona o Enzalutamida";
-                        justification = "mCRPC Naive. Selección basada en perfil metabólico.";
-                    }
-                }
-            }
-
-            // SEGURIDAD CYP3A4
-            const hasDOAC = meds.some(m => ["Apixabán", "Rivaroxabán", "Dabigatrán"].includes(m));
-            if (hasDOAC) {
-                redAlerts.push("RIESGO CRÍTICO: Interacción con Anticoagulante Directo (Inducción CYP3A4).");
-                if (mainSuggestion.includes("Enzalutamida") || mainSuggestion.includes("Apalutamida")) {
-                    mainSuggestion = (data.stage === 'mCRPC') ? "Abiraterona" : "Darolutamida";
-                    justification += " (Ajustado por seguridad anticoagulante cardiovascular).";
-                    discardedDetails.push("Enzalutamida/Apalutamida: Descartadas por reducir eficacia del anticoagulante.");
-                }
-            }
-
-            return { mainSuggestion, justification, greenAlerts, redAlerts, discardedDetails, lifeExpectancy };
-        };
 
         // --- APP ---
         function App() {
@@ -168,6 +73,9 @@
             const [queryC, setQueryC] = useState("");
             const [queryM, setQueryM] = useState("");
             const [currentAnalysis, setCurrentAnalysis] = useState(null);
+            
+            // Estado de carga para la IA
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
 
             const filteredC = useMemo(() => queryC.length > 1 ? COMORBIDITIES_CATALOG.filter(i => i.toLowerCase().includes(queryC.toLowerCase())) : [], [queryC]);
             const filteredM = useMemo(() => queryM.length > 1 ? MEDS_CATALOG.filter(i => i.toLowerCase().includes(queryM.toLowerCase())) : [], [queryM]);
@@ -180,7 +88,55 @@
 
             const removeTag = (field, val) => setFormData({ ...formData, [field]: formData[field].filter(v => v !== val) });
 
-            const handleAnalyze = () => { setCurrentAnalysis(analyzeUroPrecise(formData)); setScreen('results'); };
+            // --- MOTOR CLÍNICO CONECTADO A RENDER ---
+            const handleAnalyze = async () => {
+                setIsAnalyzing(true);
+                
+                // Calculamos la expectativa de vida localmente
+                const age = parseInt(formData.age) || 70;
+                const lifeExpectancy = age < 65 ? (formData.isFit ? 25 : 15) : (age < 75 ? (formData.isFit ? 15 : 8) : (age < 85 ? (formData.isFit ? 8 : 4) : 2));
+
+                try {
+                    // Enviamos el expediente a tu servidor mundial en Render
+                    const response = await fetch("https://uroprecise-backend.onrender.com/api/analizar-paciente", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            paciente_id: formData.name || "Paciente Anónimo",
+                            datos_clinicos: {
+                                edad: age,
+                                estadio_clinico: formData.stage,
+                                volumen_enfermedad: formData.volume,
+                                estado_funcional_ECOG: formData.isFit ? 1 : 3,
+                                tratamientos_previos: [formData.previousTreatment]
+                            },
+                            comorbilidades: formData.comorbidities,
+                            medicamentos_concomitantes: formData.concomitantMeds
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("Error en la conexión con el servidor");
+                    
+                    const dataIA = await response.json();
+
+                    // Armamos las tarjetas con la respuesta inteligente de Gemini
+                    setCurrentAnalysis({
+                        mainSuggestion: dataIA.farmaco_recomendado,
+                        justification: dataIA.justificacion_clinica,
+                        greenAlerts: [dataIA.evidencia_guias_2026],
+                        redAlerts: dataIA.alertas_interacciones ? dataIA.alertas_interacciones.map(a => `${a.medicamento_ingresado}: ${a.riesgo_detectado}`) : [],
+                        discardedDetails: [], 
+                        lifeExpectancy: lifeExpectancy
+                    });
+
+                    setScreen('results');
+
+                } catch (error) {
+                    alert("Hubo un error al conectar con UroPrecise AI. Revisa tu conexión: " + error.message);
+                } finally {
+                    setIsAnalyzing(false);
+                }
+            };
 
             const downloadClinicalPDF = () => {
                 const element = document.createElement('div');
@@ -309,7 +265,10 @@
                                     <div className="flex flex-wrap gap-2">{formData.concomitantMeds.map(m => <span key={m} className="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-bold flex items-center gap-2 shadow-lg uppercase">{m} <Icon name="X" size={14} className="cursor-pointer bg-blue-400 rounded-full p-0.5" onClick={() => removeTag('concomitantMeds', m)}/></span>)}</div>
                                 </section>
                             </div>
-                            <button onClick={handleAnalyze} className="w-[calc(100%-3rem)] mx-auto py-6 bg-blue-600 text-white font-black rounded-3xl shadow-2xl fixed bottom-8 left-6 active:scale-95 transition-all flex items-center justify-center gap-4 text-lg"><Icon name="Zap" size={24}/> GENERAR PERFILADO UROPRECISE</button>
+                            <button onClick={handleAnalyze} disabled={isAnalyzing} className={`w-[calc(100%-3rem)] mx-auto py-6 text-white font-black rounded-3xl shadow-2xl fixed bottom-8 left-6 active:scale-95 transition-all flex items-center justify-center gap-4 text-lg ${isAnalyzing ? 'bg-slate-400' : 'bg-blue-600'}`}>
+                                <Icon name={isAnalyzing ? "Hourglass" : "Zap"} size={24}/> 
+                                {isAnalyzing ? "PROCESANDO IA..." : "GENERAR PERFILADO UROPRECISE"}
+                            </button>
                         </main>
                     )}
 
